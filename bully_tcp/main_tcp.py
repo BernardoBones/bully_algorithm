@@ -1,4 +1,5 @@
 import sys
+import time
 from processo_tcp import ProcessoTCP
 
 if __name__ == "__main__":
@@ -10,9 +11,9 @@ if __name__ == "__main__":
     port = int(sys.argv[2])
 
     peers = [
-        ("127.0.0.1", 5001, 1),
-        ("127.0.0.1", 5002, 2),
-        ("127.0.0.1", 5003, 3),
+        ("processo1", 5001, 1),
+        ("processo2", 5002, 2),
+        ("processo3", 5003, 3),
     ]
 
     processo = ProcessoTCP(id, "127.0.0.1", port, peers)
@@ -22,6 +23,5 @@ if __name__ == "__main__":
         processo.iniciar_eleicao()
 
     # Mantém o programa rodando
-    import time
     while True:
         time.sleep(1)

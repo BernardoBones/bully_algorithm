@@ -1,4 +1,5 @@
 import sys
+import time
 from processo_udp import ProcessoUDP
 
 if __name__ == "__main__":
@@ -10,9 +11,9 @@ if __name__ == "__main__":
     port = int(sys.argv[2])
 
     peers = [
-        ("127.0.0.1", 6001, 1),
-        ("127.0.0.1", 6002, 2),
-        ("127.0.0.1", 6003, 3),
+    ("processo1", 6001, 1),
+    ("processo2", 6002, 2),
+    ("processo3", 6003, 3),
     ]
 
     processo = ProcessoUDP(id, "127.0.0.1", port, peers)
@@ -20,7 +21,5 @@ if __name__ == "__main__":
     if id == 1:
         processo.iniciar_eleicao()
 
-    # Mantém o programa rodando
-    import time
     while True:
         time.sleep(1)
