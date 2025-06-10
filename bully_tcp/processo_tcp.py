@@ -19,7 +19,7 @@ class ProcessoTCP:
         self.recebeu_ok = False
         self.lock = threading.Lock()
 
-        self.logger = logging.getLogger(str(self.id))
+        self.logger = logging.getLogger(f"{self.id}")
         self.logger.setLevel(log_level)
         handler = logging.StreamHandler()
         formatter = logging.Formatter(f"[%(asctime)s][%(name)s][%(levelname)s] %(message)s", datefmt="%H:%M:%S")
