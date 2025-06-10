@@ -4,6 +4,8 @@ services:
     command: ["python", "main_tcp.py", "1", "5001"]
     ports:
       - "5001:5001"
+    environment:
+      - LOG_LEVEL=DEBUG
     networks:
       bully_net:
         aliases:
@@ -14,6 +16,8 @@ services:
     command: ["python", "main_tcp.py", "2", "5002"]
     ports:
       - "5002:5002"
+    environment:
+      - LOG_LEVEL=DEBUG
     networks:
       bully_net:
         aliases:
@@ -23,11 +27,25 @@ services:
     build: .
     command: ["python", "main_tcp.py", "3", "5003"]
     ports:
-      - "5004:5004"
+      - "5003:5003"
+    environment:
+      - LOG_LEVEL=DEBUG
     networks:
       bully_net:
         aliases:
           - processo3
+
+  processo4:
+    build: .
+    command: ["python", "main_tcp.py", "4", "5004"]
+    ports:
+      - "5004:5004"
+    environment:
+      - LOG_LEVEL=DEBUG
+    networks:
+      bully_net:
+        aliases:
+          - processo4
 
 networks:
   bully_net:
