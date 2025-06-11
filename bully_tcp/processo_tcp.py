@@ -101,8 +101,8 @@ class ProcessoTCP:
                     s.connect((peer[0], peer[1]))
                     s.sendall(criar_mensagem(ELECTION, self.id).encode())
                 self.logger.debug(f"enviou ELECTION para [{peer[2]}]")
-            except ConnectionRefusedError:
-                self.logger.warning(f"não conseguiu contatar [{peer[2]}]")
+            except (socket.gaierror, ConnectionRefusedError):
+                self.logger.warning(f"não conseguiu contatar [{peer[2]}] (talvez o processo caiu)")
 
         espera = 3
         inicio = time.time()
@@ -122,34 +122,41 @@ class ProcessoTCP:
         with self.lock:
             self.lider = self.id
         self.logger.info("se declara líder")
+
         for peer in self.peers:
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     s.connect((peer[0], peer[1]))
                     s.sendall(criar_mensagem(COORDINATOR, self.id).encode())
                 self.logger.debug(f"enviou COORDINATOR para [{peer[2]}]")
-            except ConnectionRefusedError:
-                self.logger.warning(f"falha ao anunciar líder para [{peer[2]}]")
+            except (socket.gaierror, ConnectionRefusedError):
+                self.logger.warning(f"falha ao anunciar líder para [{peer[2]}] (talvez o processo caiu)")
 
     def monitorar_lider(self):
         while True:
             time.sleep(5)
             with self.lock:
                 lider_atual = self.lider
+
             if lider_atual is not None and lider_atual != self.id:
                 lider_info = next((p for p in self.peers if p[2] == lider_atual), None)
-                if lider_info:
-                    try:
-                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                            s.settimeout(2)
-                            s.connect((lider_info[0], lider_info[1]))
-                            s.sendall(criar_mensagem(PING, self.id).encode())
-                            s.recv(1024)  # espera resposta PONG
-                    except (ConnectionRefusedError, socket.timeout):
-                        self.logger.warning(f"líder [{lider_atual}] não respondeu, iniciando eleição")
-                        with self.lock:
-                            self.lider = None
-                        self.iniciar_eleicao()
+
+                if lider_info is None:
+                    self.logger.warning(f"não encontrou info de host para o líder [{lider_atual}]")
+                    continue  # ou: self.iniciar_eleicao(); continue
+
+                try:
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                        s.settimeout(2)
+                        s.connect((lider_info[0], lider_info[1]))
+                        s.sendall(criar_mensagem(PING, self.id).encode())
+                        s.recv(1024)  # espera resposta PONG
+                except (socket.gaierror, ConnectionRefusedError, socket.timeout):
+                    self.logger.warning(f"líder [{lider_atual}] não respondeu, iniciando eleição")
+                    with self.lock:
+                        self.lider = None
+                    self.iniciar_eleicao()
+
 
     def consultar_lideres(self):
         time.sleep(2)
